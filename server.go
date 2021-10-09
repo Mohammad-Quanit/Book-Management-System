@@ -1,21 +1,35 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
-	"log"
-	"net/http"
 
-	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
+)
+
+const (
+	host     = "localhost"
+	port     = 5432
+	user     = "mquanitdb"
+	password = "danzakuduro12345"
+	dbname   = "firstdb"
 )
 
 func main() {
-	router := mux.NewRouter()
-	const port string = ":8001"
-	router.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
-		fmt.Fprintln(response, "Up & running.")
-	})
-	router.HandleFunc("/posts", getPosts).Methods("GET")
-	router.HandleFunc("/posts", addPost).Methods("POST")
-	log.Println("Server listening on port", port)
-	log.Println(http.ListenAndServe(port, router))
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	db, err := sql.Open("postgres", psqlInfo)
+
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Succesfully Connected")
+
+	Insert(db)
 }
